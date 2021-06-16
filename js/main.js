@@ -105,7 +105,7 @@ async function main()
 		// 	console.log(LogicGate.valueToString(connection.currentValue));
 		circuit.update();
 		// circuit.draw();
-	}, 1000);
+	}, 50);
 	// let loop = () => {
 	// 	circuit.update();
 	// 	requestAnimationFrame(loop);

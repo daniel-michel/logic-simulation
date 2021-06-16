@@ -1,0 +1,494 @@
+{
+	"gates": {
+		"not": {
+			"io": {
+				"input": "i: bit",
+				"output": "o: bit"
+			},
+			"function": "return input => ({ type: 'bit', value: input.value ^ 1 });"
+		},
+		"and": {
+			"io": {
+				"input": "i: <bit>",
+				"output": "o: bit"
+			},
+			"function": "return input => ({ type: 'bit', value: input.children.reduce((r, c) => r & c.value, 1) });"
+		},
+		"nand": {
+			"io": {
+				"input": "<bit>",
+				"output": "bit"
+			},
+			"function": "return input => ({ type: 'bit', value: input.children.reduce((r, c) => r & c.value, 1) ^ 1 });"
+		},
+		"or": {
+			"io": {
+				"input": "i: <bit>",
+				"output": "o: bit"
+			},
+			"function": "return input => ({ type: 'bit', value: input.children.reduce((r, c) => r | c.value, 0) });"
+		},
+		"nor": {
+			"io": {
+				"input": "i: <bit>",
+				"output": "o: bit"
+			},
+			"function": "return input => ({ type: 'bit', value: input.children.reduce((r, c) => r | c.value, 0) ^ 1 });"
+		},
+		"xor": {
+			"io": {
+				"input": "i: <bit>",
+				"output": "o: bit"
+			},
+			"function": "return input => ({ type: 'bit', value: input.children.reduce((r, c) => r ^ c.value, 0) });"
+		},
+		"not any": {
+			"io": {
+				"input": "i: any",
+				"output": "o: any"
+			},
+			"function": "let negate = obj => { if (obj.type === 'collection') return {type: obj.type, children: obj.children.map(child => negate(child))}; return {type: 'bit', value: obj.value ^ 1 }; };return input => input ? negate(input) : undefined;"
+		},
+		"RS-Flip-Flop": {
+			"io": {
+				"input": "[S: bit, R: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "nor",
+						"id": "S",
+						"position": {
+							"x": 10,
+							"y": 10
+						}
+					},
+					{
+						"type": "nor",
+						"id": "R",
+						"position": {
+							"x": 10,
+							"y": 20
+						}
+					}
+				],
+				"connections": [
+					"outside/0=>S/0",
+					"outside/1=>R/0",
+					"S=>R/1:1",
+					"R=>S/1:0",
+					"S=>outside/1",
+					"R=>outside/0"
+				]
+			}
+		},
+		"RSC-Flip-Flop": {
+			"io": {
+				"input": "[S: bit, R: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "and",
+						"id": "Set"
+					},
+					{
+						"type": "and",
+						"id": "Reset"
+					},
+					{
+						"type": "RS-Flip-Flop",
+						"id": "Storage"
+					}
+				],
+				"connections": [
+					"outside/0=>Set/0",
+					"outside/1=>Reset/0",
+					"outside/2=>Set/1",
+					"outside/2=>Reset/1",
+					"Set=>Storage/0",
+					"Reset=>Storage/1",
+					"Storage=>outside"
+				]
+			}
+		},
+		"JKC-Flip-Flop": {
+			"io": {
+				"input": "[J: bit, K: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "and",
+						"id": "J"
+					},
+					{
+						"type": "and",
+						"id": "K"
+					},
+					{
+						"type": "RSC-Flip-Flop",
+						"id": "Storage"
+					}
+				],
+				"connections": [
+					"outside/0=>J/0",
+					"outside/1=>K/0",
+					"J=>Storage/0",
+					"K=>Storage/1",
+					"outside/2=>Storage/2",
+					"Storage/0=>K/1",
+					"Storage/1=>J/1",
+					"Storage=>outside"
+				]
+			}
+		},
+		"D-Flip-Flop": {
+			"io": {
+				"input": "[D: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "not",
+						"id": "not-D"
+					},
+					{
+						"type": "and",
+						"id": "Set"
+					},
+					{
+						"type": "and",
+						"id": "Reset"
+					},
+					{
+						"type": "RS-Flip-Flop",
+						"id": "Storage"
+					}
+				],
+				"connections": [
+					"outside/0=>not-D",
+					"outside/0=>Set/0",
+					"outside/1=>Set/1",
+					"not-D=>Reset/0",
+					"outside/1=>Reset/1",
+					"Set=>Storage/0",
+					"Reset=>Storage/1",
+					"Storage=>outside"
+				]
+			}
+		},
+		"N.E.T.-D-Flip-Flop": {
+			"io": {
+				"input": "[D: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "nor",
+						"id": "1"
+					},
+					{
+						"type": "nor",
+						"id": "2"
+					},
+					{
+						"type": "nor",
+						"id": "3"
+					},
+					{
+						"type": "nor",
+						"id": "4"
+					},
+					{
+						"type": "nor",
+						"id": "5"
+					},
+					{
+						"type": "nor",
+						"id": "6"
+					}
+				],
+				"connections": [
+					"outside/0=>1/0",
+					"2=>1/1",
+					"1=>2/0:1",
+					"outside/1=>2/1",
+					"3=>2/2",
+					"outside/1=>3/0",
+					"4=>3/1:1",
+					"3=>4/0",
+					"1=>4/1",
+					"2=>5/0",
+					"6=>5/1:1",
+					"5=>6/0",
+					"3=>6/1",
+					"6=>outside/0",
+					"5=>outside/1"
+				]
+			}
+		},
+		"MS-RS-Flip-Flop": {
+			"io": {
+				"input": "[S: bit, R: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "not",
+						"id": "not-C"
+					},
+					{
+						"type": "RSC-Flip-Flop",
+						"id": "master"
+					},
+					{
+						"type": "RSC-Flip-Flop",
+						"id": "slave"
+					}
+				],
+				"connections": [
+					"outside/2=>not-C",
+					"outside=>master",
+					"master/0=>slave/0",
+					"master/1=>slave/1",
+					"not-C=>slave/2",
+					"slave=>outside"
+				]
+			}
+		},
+		"MS-JK-Flip-Flop": {
+			"io": {
+				"input": "[J: bit, K: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "and",
+						"id": "J"
+					},
+					{
+						"type": "and",
+						"id": "K"
+					},
+					{
+						"type": "MS-RS-Flip-Flop",
+						"id": "Storage"
+					}
+				],
+				"connections": [
+					"outside/0=>J/0",
+					"outside/1=>K/0",
+					"J=>Storage/0",
+					"K=>Storage/1",
+					"outside/2=>Storage/2",
+					"Storage/0=>K/1",
+					"Storage/1=>J/1",
+					"Storage=>outside"
+				]
+			}
+		},
+		"TC-Flip-Flop": {
+			"io": {
+				"input": "[T: bit, C: bit]",
+				"output": "[Q: bit, N: bit]"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "MS-JK-Flip-Flop",
+						"id": "storage"
+					}
+				],
+				"connections": [
+					"outside/0=>storage/0",
+					"outside/0=>storage/1",
+					"outside/1=>storage/2",
+					"storage=>outside"
+				]
+			}
+		},
+		"nand circuit": {
+			"io": {
+				"input": "<bit>",
+				"output": "bit"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "and",
+						"id": "0",
+						"position": {
+							"x": 10,
+							"y": 10
+						}
+					},
+					{
+						"type": "not",
+						"id": "1",
+						"position": {
+							"x": 10,
+							"y": 20
+						}
+					}
+				],
+				"connections": [
+					"outside=>0",
+					"1=>outside",
+					"0=>1"
+				]
+			}
+		},
+		"delay": {
+			"io": {
+				"input": "any",
+				"output": "any"
+			},
+			"circuit": {
+				"gates": [],
+				"connections": [
+					"outside=>outside"
+				]
+			}
+		},
+		"7 segment display": {
+			"io": {
+				"input": "[a: bit, b: bit, c: bit, d: bit, e: bit, f: bit, g: bit]",
+				"output": "none"
+			},
+			"function": "\nlet state = new Array(7).fill(0);\nlet segWidth = 0.3;\nlet segHalfWidth = segWidth / 2;\nlet segLength = 2;\nlet segHalfLen = segLength / 2;\nlet space = 0.1;\nfunction drawSeg(context)\n{\n    context.beginPath();\n    context.lineTo(-segHalfLen, 0);\n    context.lineTo(-segHalfLen + segHalfWidth, segHalfWidth);\n    context.lineTo(segHalfLen - segHalfWidth, segHalfWidth);\n    context.lineTo(segHalfLen, 0);\n    context.lineTo(segHalfLen - segHalfWidth, -segHalfWidth);\n    context.lineTo(-segHalfLen + segHalfWidth, -segHalfWidth);\n    context.fill();\n}\nconst { default: Vec2 } = await import('./math/Vec2.js');\nthis.rect.width = segLength + 2 * (space + segHalfWidth) + 1;\nthis.rect.height = 2 * space + 2 * segLength + 2 * (space + segHalfWidth) + 1;\nlet segs = [\n    { pos: new Vec2(0, -segLength - 2 * space), rotation: 0 },\n    { pos: new Vec2(segHalfLen + space, -segHalfLen - space), rotation: Math.PI / 2 },\n    { pos: new Vec2(segHalfLen + space, segHalfLen + space), rotation: Math.PI / 2 },\n    { pos: new Vec2(0, segLength + 2 * space), rotation: 0 },\n    { pos: new Vec2(-segHalfLen - space, segHalfLen + space), rotation: Math.PI / 2 },\n    { pos: new Vec2(-segHalfLen - space, -segHalfLen - space), rotation: Math.PI / 2 },\n    { pos: new Vec2(0, 0), rotation: 0 },\n];\nreturn {\n\tlogic(input)\n\t{\n\t\tstate = input.children.map(child => child.value);\n\t},\n    draw({ context })\n\t{\n        this.drawBackground({ context });\n\t\tfor (let i = 0; i < segs.length; i++)\n        {\n            let seg = segs[i];\n            context.save();\n            context.translate(seg.pos.x, seg.pos.y);\n            context.rotate(seg.rotation);\n            if (state[i])\n                context.fillStyle = \"hsl(0, 0%, 100%)\";\n            else\n                context.fillStyle = \"hsl(0, 0%, 30%)\";\n            drawSeg(context);\n            context.restore();\n        }\n\t}\n};\n"
+		},
+		"switch": {
+			"io": {
+				"input": "none",
+				"output": "bit"
+			},
+			"function": "let state = 0;\nconst { fillBeveledRect } = await import('./drawing.js');\nconst { default: Vec2 } = await import('./math/Vec2.js');\nthis.rect.width = 1.5;\nthis.rect.height = 1.5;\nreturn {\n\tlogic(input)\n\t{\n\t\treturn { type: 'bit', value: state };\n\t},\n\tonclick(event)\n\t{\n\t\tstate ^= 1\n\t},\n\tdraw({ context })\n\t{\n\t\tthis.rect.width = 1.5 + this.outputConnector.connectorRadius;\n\t\tthis.drawBackground({ context });\n\t\tcontext.fillStyle = state ? 'hsl(240, 100%, 70%)' : 'hsl(0, 100%, 70%)';\n\t\tfillBeveledRect(context, new Vec2(-this.outputConnector.connectorRadius / 2, 0), this.rect.halfSize.copy().sub(new Vec2(0.35 + this.outputConnector.connectorRadius / 2, 0.35)), 0.15);\n\t}\n};"
+		},
+		"lamp": {
+			"io": {
+				"input": "bit",
+				"output": "none"
+			},
+			"function": "let state = 0;\nconst { fillBeveledRect } = await import('./drawing.js');\nconst { default: Vec2 } = await import('./math/Vec2.js');\nthis.rect.width = 1.5;\nthis.rect.height = 1.5;\nreturn {\n\tlogic(input)\n\t{\n\t\tstate = input.value;\n\t},\n\tdraw({ context })\n\t{\n\t\tthis.rect.width = 1.5 + this.inputConnector.connectorRadius;\n\t\tthis.drawBackground({ context });\n\t\tcontext.fillStyle = state ? 'hsl(240, 100%, 70%)' : 'hsl(0, 100%, 70%)';\n\t\tfillBeveledRect(context, new Vec2(this.inputConnector.connectorRadius / 2, 0), this.rect.halfSize.copy().sub(new Vec2(0.35 + this.inputConnector.connectorRadius / 2, 0.35)), 0.15);\n\t}\n};"
+		},
+		"binary decimal display": {
+			"io": {
+				"input": "<bit, *>",
+				"output": "none"
+			},
+			"function": "return input => this.name = parseInt(input.children.map(child => child.value).reverse().join(''), 2).toString();"
+		},
+		"pulse": {
+			"io": {
+				"input": "none",
+				"output": "p: bit"
+			},
+			"function": "let count = 0;\nlet pulseFrequency = 10;\nreturn input => ({ type: 'bit', value: (count++) % pulseFrequency === 0 ? 1 : 0 });"
+		},
+		"square": {
+			"io": {
+				"input": "none",
+				"output": "p: bit"
+			},
+			"function": "let count = 0;\nlet high = 30;\nlet low = 30;\nreturn input => ({ type: 'bit', value: (count++) % (high + low) < high ? 1 : 0 });"
+		},
+		"test": {
+			"io": {
+				"input": "none",
+				"output": "none"
+			},
+			"circuit": {
+				"gates": [
+					{
+						"type": "switch",
+						"id": "switch",
+						"position": {
+							"x": 10,
+							"y": 15
+						}
+					},
+					{
+						"type": "square",
+						"id": "square",
+						"position": {
+							"x": 10,
+							"y": 25
+						}
+					},
+					{
+						"type": "or",
+						"id": "or",
+						"position": {
+							"x": 30,
+							"y": 20
+						}
+					},
+					{
+						"type": "and",
+						"id": "and",
+						"position": {
+							"x": 50,
+							"y": 20
+						}
+					},
+					{
+						"type": "not any",
+						"id": "not",
+						"position": {
+							"x": 50,
+							"y": 10
+						}
+					},
+					{
+						"type": "nand circuit",
+						"id": "nand",
+						"position": {
+							"x": 70,
+							"y": 15
+						}
+					},
+					{
+						"type": "7 segment display",
+						"id": "7seg",
+						"position": {
+							"x": 100,
+							"y": 20
+						}
+					}
+				],
+				"connections": [
+					"switch=>or/*",
+					"square=>or/*",
+					"or=>and/*",
+					"not=>and/*",
+					"and=>not",
+					"not=>nand/*",
+					"and=>nand/*",
+					"nand=>and/*"
+				]
+			}
+		},
+		"time display": {
+			"io": {
+				"input": "none",
+				"output": "none"
+			},
+			"function": "return () => this.name = new Date().toLocaleTimeString();"
+		},
+		"time": {
+			"io": {
+				"input": "none",
+				"output": "<bit, 41>"
+			},
+			"function": "return () => ({type: 'collection', children: [...Date.now().toString(2)].reverse().map(v => ({type: 'bit', value: +v})) })"
+		}
+	}
+}

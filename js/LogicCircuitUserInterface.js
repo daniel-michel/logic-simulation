@@ -53,7 +53,6 @@ export default class LogicCircuitUserInterface
 	#ctrlPressed = false;
 	#redrawRequested = false;
 	#search = { text: "", position: new Vec2() };
-	#clipboard;
 	/**
 	 * @type {Map<LogicGate, { startPosition?: Vec2 }>}
 	 */
@@ -105,7 +104,6 @@ export default class LogicCircuitUserInterface
 	 *
 	 * @param {MouseEvent} e
 	 */
-	//@ts-ignore
 	#getMousePos(e)
 	{
 		let boundingRect = this.#canvas.getBoundingClientRect();
@@ -115,7 +113,6 @@ export default class LogicCircuitUserInterface
 	 *
 	 * @param {MouseEvent|KeyboardEvent} e
 	 */
-	//@ts-ignore
 	#updatePressed(e)
 	{
 		this.#shiftPressed = e.shiftKey;
@@ -128,9 +125,7 @@ export default class LogicCircuitUserInterface
 	setCanvas(canvas)
 	{
 		if (this.#canvas)
-		{
 			this.#cleanupEventListeners();
-		}
 
 		this.#canvas = canvas;
 		this.#canvas.setAttribute("tabindex", "0");
@@ -167,7 +162,7 @@ export default class LogicCircuitUserInterface
 			let windowOnMove = e =>
 			{
 				this.#updatePressed(e);
-				
+
 				this.#mouseCurrent = this.#getMousePos(e);
 				let pos = this.projectToCircuit(this.#mouseCurrent);
 				if (!this.#dragging && this.#mouseCurrent.copy().sub(this.#mouseStart).getLength() > 5)
@@ -191,7 +186,6 @@ export default class LogicCircuitUserInterface
 				{
 					if (this.#startElement instanceof LogicGate)
 					{
-						// this.#startElement.rect.center = pos;
 						for (let [gate, info] of this.#selectedInfo)
 						{
 							gate.rect.center.set().add(info.startPosition).add(pos).sub(this.projectToCircuit(this.#mouseStart)).round();
@@ -423,13 +417,8 @@ export default class LogicCircuitUserInterface
 				{
 					if (this.#startElement.connector.input && this.#startElement.connector.hasConnection())
 					{
-						let from = this.#startElement.connector.connections[0]?.from;
 						this.#startElement.connector.disconnectAll();
 						this.#startElement = undefined;
-						// if (from)
-						// {
-						// 	this.#startElement = from;
-						// }
 					}
 				}
 				else
@@ -452,21 +441,19 @@ export default class LogicCircuitUserInterface
 			 * 
 			 * @param {KeyboardEvent} e 
 			 */
-			let keydown = e =>
+			let keydown = async e =>
 			{
-				if (e.repeat)
-					return;
 				if (e.key === "Enter")
 				{
 
 					let gateType = this.#search.text;
-					if (!this.circuit.gateDiscriptions[gateType])
-						gateType = Object.keys(this.circuit.gateDiscriptions).find(name => name.startsWith(this.#search.text));
-					if (this.circuit.gateDiscriptions[gateType])
+					if (!this.circuit.gateDescriptions[gateType])
+						gateType = Object.keys(this.circuit.gateDescriptions).find(name => name.startsWith(this.#search.text));
+					if (this.circuit.gateDescriptions[gateType])
 					{
-						if (e.ctrlKey && this.circuit.gateDiscriptions[gateType].circuit)
+						if (e.ctrlKey && this.circuit.gateDescriptions[gateType].circuit)
 						{
-							this.circuit.createFromDescription(this.circuit.gateDiscriptions[gateType].circuit, this.#search.position.round());
+							this.circuit.createFromDescription(this.circuit.gateDescriptions[gateType].circuit, this.#search.position.round());
 						}
 						else
 						{
@@ -480,16 +467,21 @@ export default class LogicCircuitUserInterface
 				{
 					if (e.key === "c")
 					{
-						this.#clipboard = this.stringifySelection();
-						console.log(this.#clipboard);
+						navigator.clipboard.writeText(this.stringifySelection());
 					}
-					else if (e.key === "v" && this.#clipboard)
+					else if (e.key === "v")
 					{
-						let gates = this.circuit.insertStringified(this.#clipboard);
-						this.#selectedInfo.clear();
-						for (let gate of Object.values(gates))
+						try
 						{
-							this.#selectedInfo.set(gate, {});
+							let pasted = await getPaste();
+							let gates = this.circuit.insertStringified(pasted);
+							this.#selectedInfo.clear();
+							for (let gate of Object.values(gates))
+								this.#selectedInfo.set(gate, {});
+						}
+						catch (e)
+						{
+							alert("The text in the clipboard does not appear to be a valid circuit description.");
 						}
 					}
 					else if (e.key === "s")
@@ -507,14 +499,7 @@ export default class LogicCircuitUserInterface
 					else if (e.key === "Escape")
 						this.#search.text = "";
 					else if (e.key === "Delete")
-					{
-						if (this.#selectedInfo.size > 0)
-						{
-							for (let [gate, info] of this.#selectedInfo)
-								this.circuit.remove(gate);
-							this.#selectedInfo.clear();
-						}
-					}
+						this.deleteSelected();
 					else if (e.key.length === 1)
 						this.#search.text += e.key;
 				}
@@ -553,7 +538,16 @@ export default class LogicCircuitUserInterface
 		}
 	}
 
-	//@ts-ignore
+	deleteSelected()
+	{
+		if (this.#selectedInfo.size > 0)
+		{
+			for (let [gate] of this.#selectedInfo)
+				this.circuit.remove(gate);
+			this.#selectedInfo.clear();
+		}
+	}
+
 	#isSelected(gate)
 	{
 		if (!this.#selectionArea)
@@ -612,9 +606,6 @@ export default class LogicCircuitUserInterface
 			gate.selected = this.#isSelected(gate);
 			gate.draw({ context: this.#context });
 		}
-		// this.circuit.draw({ context: this.#context });
-		this.circuit.innerInputConnector.draw({ context: this.#context });
-		this.circuit.innerOutputConnector.draw({ context: this.#context });
 		if (this.#selectionArea)
 		{
 			this.#context.fillStyle = "hsla(220, 100%, 70%, 0.5)";
@@ -625,8 +616,8 @@ export default class LogicCircuitUserInterface
 		if (this.#search.text)
 		{
 			let completion = this.#search.text;
-			if (!this.circuit.gateDiscriptions[completion])
-				completion = Object.keys(this.circuit.gateDiscriptions).find(name => name.startsWith(this.#search.text));
+			if (!this.circuit.gateDescriptions[completion])
+				completion = Object.keys(this.circuit.gateDescriptions).find(name => name.startsWith(this.#search.text));
 			this.#context.font = "1px Arial";
 			this.#context.textAlign = "center";
 			this.#context.textBaseline = "middle";
@@ -666,7 +657,6 @@ export default class LogicCircuitUserInterface
 					}
 				]
 			});
-			// [this.#fileHandle] = await showOpenFilePicker();
 		}
 		console.log(this.#fileHandle);
 		await writeTo(this.#fileHandle, this.circuit.toString());
@@ -683,7 +673,7 @@ async function writeTo(fileHandle, content)
 	/**
 	 * @type {FileSystemWriteableFileStream}
 	 */
-	let writeable = await fileHandle.createWriteable();
+	let writeable = await fileHandle.createWritable();
 	await writeable.write(content);
 	await writeable.close();
 }
@@ -716,7 +706,25 @@ function decodeMouseButtonsPressed(code)
 	return pressed;
 }
 
-// /**
-//  * @type {(options?: {multiple?: boolean, excludeAcceptAllOptions?: boolean, types?: {description?: *, accept?: {[x: string]: string[]}}[]}) => FileSystemFileHandle[]}
-//  */
-// var showOpenFilePicker;
+async function getPaste()
+{
+	let focusedElement = document.activeElement;
+	let input = document.createElement("textarea");
+	input.style.position = "fixed";
+	input.style.opacity = "0";
+	input.style.pointerEvents = "none";
+	document.body.appendChild(input);
+	input.focus();
+	return new Promise(resolve =>
+	{
+		setTimeout(() =>
+		{
+			let text = input.value;
+			document.body.removeChild(input);
+			if (focusedElement instanceof HTMLElement)
+				focusedElement.focus();
+			console.log(document.activeElement)
+			resolve(text);
+		}, 1);
+	});
+}

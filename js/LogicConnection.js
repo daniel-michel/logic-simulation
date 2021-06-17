@@ -97,7 +97,6 @@ export default class LogicConnection
 		this.to = undefined;
 		this.onDeleteListeners.forEach(listener => listener());
 		this.onDeleteListeners = [];
-		// TODO: remove from circuit (I thing this was fixed with the listener)
 	}
 
 	/**
@@ -181,10 +180,10 @@ export default class LogicConnection
 		 * @param {import("./LogicGate.js").IOInterface} interf 
 		 * @returns {ConnectionVisualization}
 		 */
-		let converToVisualization = interf =>
+		let convertToVisualization = interf =>
 		{
 			if (interf.type === "collection")
-				return interf.children.map(child => converToVisualization(child));
+				return interf.children.map(child => convertToVisualization(child));
 			if (interf.type === "any")
 				return { color: "hsl(0, 0%, 60%)", dash: [10, 3] };
 			if (interf.type === "bit")
@@ -193,7 +192,7 @@ export default class LogicConnection
 				return { color: "hsl(0, 0%, 60%)", dash: [3, 5] };
 			return "hsl(0, 0%, 60%)";
 		};
-		this.drawConnectionVisualization(context, converToVisualization(interf), points, maxWidth);
+		this.drawConnectionVisualization(context, convertToVisualization(interf), points, maxWidth);
 	}
 
 
@@ -211,7 +210,6 @@ export default class LogicConnection
 	{
 		if (!value)
 			return;
-		// let decrementFunctin = (depth) => 1 / depth;
 		let decrementFunction = (depth) => 1 / (depth ** (0.8));
 		/**
 		 * 
@@ -227,8 +225,7 @@ export default class LogicConnection
 		let totalSpacing = getSpacing(value, 1);
 		let spaceDist = Math.min(totalSpacing > 0 ? maxWidth / totalSpacing : 0, 0.2);
 
-		let curve = calculatePointsOnCurveAccurat(points);
-		// let curve = calculatePointsOnCurve(points, 60);
+		let curve = calculatePointsOnCurveAccurate(points);
 		/**
 		 * @type {{point: Vec2, right: Vec2}[]}
 		 */
@@ -243,12 +240,9 @@ export default class LogicConnection
 				heading.add(current).sub(last);
 			if (next)
 				heading.add(next).sub(current);
-			// let headingAngle = Math.atan2(heading.y, heading.x);
 			heading.norm();
 			let right = heading.copy().rotate90DegLeft(); // the function assumes the coordinate system to be cartesian but the y-axis ont he canvas is flipped so the rotation has to be flipped as well
 			curveInfo.push({ point: current, right });
-			// context.fillStyle = "white";
-			// context.fillRect(current.x - 1, current.y - 1, 2, 2);
 		}
 		let middle = curveInfo[Math.floor(curveInfo.length / 2)];
 		context.save();
@@ -347,7 +341,7 @@ function calculatePointsOnCurve(points, steps = 10)
  * @param {number} minSteps
  * @returns {Vec2[]}
  */
-function calculatePointsOnCurveAccurat(points, maxError = 0.01, minSteps = 10)
+function calculatePointsOnCurveAccurate(points, maxError = 0.01, minSteps = 10)
 {
 	/**
 	 * @type {{pos: Vec2, t: number}[]}

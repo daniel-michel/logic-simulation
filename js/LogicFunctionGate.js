@@ -22,7 +22,6 @@ export default class LogicFunctionGate extends LogicGate
 		this.#initiateLogic(logicObj);
 	}
 
-	//@ts-ignore
 	async #initiateLogic(logicObj)
 	{
 		try
@@ -81,7 +80,6 @@ export default class LogicFunctionGate extends LogicGate
 		catch (e)
 		{
 			this.error = { message: e.message };
-			// console.error(e);
 		}
 	}
 }

@@ -44,7 +44,7 @@ function calculatePointsOnCurve(points, steps = 10)
  * @param {number} minSteps
  * @returns {Vec2[]}
  */
-function calculatePointsOnCurveAccurat(points, maxError = 3, minSteps = 7)
+function calculatePointsOnCurveAccurate(points, maxError = 3, minSteps = 7)
 {
 	/**
 	 * @type {{pos: Vec2, t: number}[]}
@@ -120,10 +120,10 @@ function test(func, times, ...args)
 console.log("");
 
 test(calculatePointsOnCurve, 5000, [new Vec2(0, 0), new Vec2(100, 100), new Vec2(200, 0)], 50);
-test(calculatePointsOnCurveAccurat, 5000, [new Vec2(0, 0), new Vec2(100, 100), new Vec2(200, 0)], 1, 10);
+test(calculatePointsOnCurveAccurate, 5000, [new Vec2(0, 0), new Vec2(100, 100), new Vec2(200, 0)], 1, 10);
 
 test(calculatePointsOnCurve, 5000, [new Vec2(0, 0), new Vec2(100, 200), new Vec2(200, 0)], 50);
-test(calculatePointsOnCurveAccurat, 5000, [new Vec2(0, 0), new Vec2(100, 200), new Vec2(200, 0)], 1, 10);
+test(calculatePointsOnCurveAccurate, 5000, [new Vec2(0, 0), new Vec2(100, 200), new Vec2(200, 0)], 1, 10);
 
 test(calculatePointsOnCurve, 5000, [new Vec2(0, 0), new Vec2(100, 300), new Vec2(200, 0)], 50);
-test(calculatePointsOnCurveAccurat, 5000, [new Vec2(0, 0), new Vec2(100, 300), new Vec2(200, 0)], 0.4, 10);
+test(calculatePointsOnCurveAccurate, 5000, [new Vec2(0, 0), new Vec2(100, 300), new Vec2(200, 0)], 0.4, 10);

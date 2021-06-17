@@ -59,7 +59,6 @@ export default class LogicConnector
 	 * 
 	 * @param {number} index 
 	 */
-	//@ts-ignore
 	#addSubConnector(index)
 	{
 		if (index < 0)
@@ -84,7 +83,6 @@ export default class LogicConnector
 		this.subConnectors[index] = connector;
 		return connector;
 	}
-	//@ts-ignore
 	#getNumBits()
 	{
 		let num = this.subConnectors.reduce((acc, c) => acc + c.numBits, 0);
@@ -108,8 +106,6 @@ export default class LogicConnector
 			height = this.subConnectors.length * this.margin + this.subConnectors.reduce((acc, c) => acc + c.size.y, 0);
 		height = Math.max(height, this.connectorRadius * 2);
 		this.size.y = height;
-		// if (this.parent)
-		// 	this.parent.updateLayout();
 	}
 	/**
 	 * 
@@ -134,17 +130,6 @@ export default class LogicConnector
 				{
 					this.subConnectors[i].updateInterface(interf.children[i]);
 				}
-			}
-		}
-		if (interf.type !== this.interface.type)
-		{
-			//TODO
-		}
-		else
-		{
-			if (interf.type === "collection")
-			{
-
 			}
 		}
 		this.interface = interf;
@@ -209,13 +194,10 @@ export default class LogicConnector
 			let offset = -this.size.y / 2 + this.margin / 2;
 			for (let connector of this.subConnectors)
 			{
-				if (connector) // && connector.isShown()
+				if (connector)
 				{
 					let position = new Vec2((this.input ? -1 : 1) * this.subConnectorOffset, offset + connector.size.y / 2);
 					world.context.strokeStyle = "hsl(0, 0%, 60%)";
-
-					// LogicConnection.drawParallelConnectionInterface(world.context, connector.interface, [new Vec2(0, 0), new Vec2(0, position.y), position], connector.connectorRadius);
-					// LogicConnection.drawParallelConnectionInterface(world.context, connector.interface, [new Vec2(0, 0), new Vec2(0, position.y), position].reverse(), connector.connectorRadius);
 
 					let drawn = false;
 					let points = [new Vec2(0, 0), new Vec2(0, position.y), position];
@@ -236,16 +218,11 @@ export default class LogicConnector
 					}
 					if (!drawn)
 						LogicConnection.drawParallelConnectionInterface(world.context, connector.interface, points, connector.connectorRadius * 1.8);
-					// world.context.beginPath();
-					// world.context.moveTo(0, 0);
-					// world.context.quadraticCurveTo(0, position.y, position.x, position.y);
-					// world.context.quadraticCurveTo(position.x, 0, position.x, position.y);
-					// world.context.stroke();
+
 					world.context.save();
 					world.context.translate(position.x, position.y);
 					connector.draw(world);
 					world.context.restore();
-					// console.log(connector.size.y);
 					offset += connector.size.y;
 				}
 				offset += this.margin;
@@ -353,8 +330,6 @@ export default class LogicConnector
 	 */
 	getValue()
 	{
-		// if (!this.input)
-		// 	throw new Error("The value of the output connector cannot be read");
 		if (this.connections[0]?.lastValue)
 		{
 			if (!LogicGate.valueMatchesInterface(this.connections[0].lastValue, this.interface))
@@ -407,11 +382,10 @@ export default class LogicConnector
 	 * @param {number} index 
 	 * @returns {import("./LogicGate.js").IOInterface | string}
 	 */
-	//@ts-ignore
 	#getSubconnectorType(index = -1)
 	{
 		if (this.interface.type === "none" || this.interface.type === "bit")
-			throw new Error(`A connector of type "${this.interface.type}" cannot habe any subconnectors.`);
+			throw new Error(`A connector of type "${this.interface.type}" cannot have any subconnectors.`);
 		if (this.interface.type === "any")
 			return "any";
 		if (this.interface.type === "collection")
@@ -446,7 +420,7 @@ export default class LogicConnector
 				if (first === "*")
 				{
 					if (this.interface.type !== "any" && this.interface.type !== "rest")
-						throw new Error(`Cannot connec to to any sub connector on connector of type ${this.interface.type}.`);
+						throw new Error(`Cannot connect to to any sub connector on connector of type ${this.interface.type}.`);
 					let connector = this.#addSubConnector(this.subConnectors.length);
 					this.updateLayout();
 					return connector.connectTo(connection, list.join("/"));
@@ -478,7 +452,7 @@ export default class LogicConnector
 	{
 		if (!this.canConnect(connection.dataInterface))
 		{
-			throw new Error(`Interface missmatch. The type of the connector is "${LogicGate.interfaceToString(this.interface, false)}" but the connection is of the type "${LogicGate.interfaceToString(connection.dataInterface, false)}".`);
+			throw new Error(`Interface mismatch. The type of the connector is "${LogicGate.interfaceToString(this.interface, false)}" but the connection is of the type "${LogicGate.interfaceToString(connection.dataInterface, false)}".`);
 		}
 		if (this.input && this.hasConnection())
 			throw new Error("There can only be one input connection");
@@ -498,8 +472,6 @@ export default class LogicConnector
 		let connection;
 		while (connection = this.connections[0])
 			connection.delete();
-		// for (let i = this.connections.length - 1; i >= 0; i--)
-		// 	this.connections[i].delete();
 		for (let connector of this.subConnectors)
 			connector.disconnectAll();
 	}

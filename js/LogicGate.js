@@ -1,7 +1,5 @@
 import LogicConnector from "./LogicConnector.js";
 import { drawBeveledRect, fillBeveledRect } from "./drawing.js";
-// import LogicGateCircuit from "./LogicGateCircuit.js";
-// import LogicGateFunction from "./LogicGateFunction.js";
 import Rect from "./math/Rect.js";
 import Vec2 from "./math/Vec2.js";
 
@@ -292,13 +290,10 @@ export default class LogicGate
 		// "[a:bit, b:bit, [bit, bit]]" "<[bit, bit],5>" "*" "<bit,*>" "none"
 		let interf = {};
 
-		// console.group("input", string);
-
 		string = string.trim();
 
 		let res = string.match(/^(?:([^\[\]\<\>]+?):)?(.+)$/);
 		let [, name, type] = res;
-		// console.log(string, res, { name, type });
 		if (name)
 			interf.name = name;
 		type = type.trim();
@@ -310,7 +305,7 @@ export default class LogicGate
 		 * @param {string} string 
 		 * @returns {string[]}
 		 */
-		let seperateString = string =>
+		let separateString = string =>
 		{
 			let stack = [];
 			/**
@@ -341,7 +336,7 @@ export default class LogicGate
 					if (top().char === "[" && char === "]" || top().char === "<" && char === ">")
 						stack.pop();
 					else
-						throw new Error(`Parentheses missmatch opended with "${top().char}" but closed with "${char}" at position ${i}.`);
+						throw new Error(`Parentheses mismatch opened with "${top().char}" but closed with "${char}" at position ${i}.`);
 				}
 			}
 			strings.push(string.substring(lastDivision, string.length));
@@ -353,7 +348,7 @@ export default class LogicGate
 		{
 			if (!type.endsWith("]"))
 				throw new Error(`A collection starting with "[" is expected to end with "]" but at the end "${type[type.length - 1]}" was found.`);
-			let segments = seperateString(type.substring(1, type.length - 1));
+			let segments = separateString(type.substring(1, type.length - 1));
 			interf.type = "collection";
 			interf.children = segments.map(segment => this.interfaceFromString(segment));
 		}
@@ -361,7 +356,7 @@ export default class LogicGate
 		{
 			if (!type.endsWith(">"))
 				throw new Error(`A collection/rest starting with "<" is expected to end with ">" but at the end "${type[type.length - 1]}" was found.`);
-			let segments = seperateString(type.substring(1, type.length - 1));
+			let segments = separateString(type.substring(1, type.length - 1));
 			if (segments.length > 2 || segments.length === 0)
 				throw new Error(`A collection/rest using "<" and ">" is expected to get an type and optionally an number like this: <type[, number|*]> but got ${segments.length} arguments.`);
 			let childInterface = this.interfaceFromString(segments[0]);
@@ -393,8 +388,6 @@ export default class LogicGate
 			throw new Error(`The type "${type}" was not recognized.`);
 		}
 
-		// console.log(interf);
-		// console.groupEnd();
 		return interf;
 	}
 
@@ -480,13 +473,10 @@ export default class LogicGate
 		// "[a:bit, b:bit, [bit, bit]]" "<[bit, bit],5>" "*" "<bit,*>" "none"
 		let value = {};
 
-		// console.group("input", string);
-
 		string = string.trim();
 
 		let res = string.match(/^(?:([^\[\]\<\>]+?):)?(.+)$/);
 		let [, name, type] = res;
-		// console.log(string, res, { name, type });
 		if (name)
 			value.name = name;
 		type = type.trim();
@@ -498,7 +488,7 @@ export default class LogicGate
 		 * @param {string} string 
 		 * @returns {string[]}
 		 */
-		let seperateString = string =>
+		let separateString = string =>
 		{
 			let stack = [];
 			/**
@@ -529,7 +519,7 @@ export default class LogicGate
 					if (top().char === "[" && char === "]" || top().char === "<" && char === ">")
 						stack.pop();
 					else
-						throw new Error(`Parentheses missmatch opended with "${top().char}" but closed with "${char}" at position ${i}.`);
+						throw new Error(`Parentheses mismatch opened with "${top().char}" but closed with "${char}" at position ${i}.`);
 				}
 			}
 			strings.push(string.substring(lastDivision, string.length));
@@ -541,7 +531,7 @@ export default class LogicGate
 		{
 			if (!type.endsWith("]"))
 				throw new Error(`A collection starting with "[" is expected to end with "]" but at the end "${type[type.length - 1]}" was found.`);
-			let segments = seperateString(type.substring(1, type.length - 1));
+			let segments = separateString(type.substring(1, type.length - 1));
 			value.type = "collection";
 			value.children = segments.map(segment => this.valueFromString(segment));
 		}
@@ -549,7 +539,7 @@ export default class LogicGate
 		{
 			if (!type.endsWith(">"))
 				throw new Error(`A collection/rest starting with "<" is expected to end with ">" but at the end "${type[type.length - 1]}" was found.`);
-			let segments = seperateString(type.substring(1, type.length - 1));
+			let segments = separateString(type.substring(1, type.length - 1));
 			if (segments.length > 2 || segments.length === 0)
 				throw new Error(`A collection/rest using "<" and ">" is expected to get an type and optionally an number like this: <type[, number|*]> but got ${segments.length} arguments.`);
 			let childInterface = this.valueFromString(segments[0]);
@@ -581,17 +571,6 @@ export default class LogicGate
 			throw new Error(`The type "${type}" was not recognized.`);
 		}
 
-		// console.log(interf);
-		// console.groupEnd();
 		return value;
 	}
 }
-
-
-
-// LogicGate.createInterface("[a:bit, b:bit, [bit, bit]]");
-// LogicGate.createInterface("<[bit, bit],5>");
-// LogicGate.createInterface("*");
-// LogicGate.createInterface("<bit,*>");
-// LogicGate.createInterface("none");
-// LogicGate.createInterface("[none]");

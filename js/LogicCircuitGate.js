@@ -27,7 +27,7 @@ export default class LogicCircuitGate extends LogicGate
 	/**
 	 * @type {{[x: string]: import("./LogicGate.js").GateDescription}}
 	 */
-	gateDiscriptions = {};
+	gateDescriptions = {};
 
 	constructor(name = "undefined", type = "undefined", pos = new Vec2())
 	{
@@ -52,7 +52,7 @@ export default class LogicCircuitGate extends LogicGate
 	 */
 	loadGateDescriptions(descriptions)
 	{
-		Object.assign(this.gateDiscriptions, descriptions);
+		Object.assign(this.gateDescriptions, descriptions);
 	}
 	/**
 	 * 
@@ -61,10 +61,10 @@ export default class LogicCircuitGate extends LogicGate
 	 */
 	createGate(type)
 	{
-		let gateDescription = this.gateDiscriptions[type];
+		let gateDescription = this.gateDescriptions[type];
 		if (!gateDescription)
 			throw new Error(`No gate description of the type "${type}" could be found.`);
-		let gate = LogicCircuitGate.gateFromDescription({ ...gateDescription, type }, type, this.gateDiscriptions);
+		let gate = LogicCircuitGate.gateFromDescription({ ...gateDescription, type }, type, this.gateDescriptions);
 		gate.name = type;
 		this.add(gate);
 		return gate;
@@ -130,7 +130,6 @@ export default class LogicCircuitGate extends LogicGate
 		{
 			if (this.innerInputConnector.interface.type !== "none")
 				this.innerInputConnector.setValue(this.inputConnector.getValue());
-			// console.log("in: ", LogicGate.valueToString(this.inputConnector.getValue()));
 			for (let gate of this.gates)
 				gate.update();
 			for (let connection of this.connections)
@@ -143,7 +142,6 @@ export default class LogicCircuitGate extends LogicGate
 		{
 			this.error = { message: e.message };
 		}
-		// console.log("out: ", LogicGate.valueToString(this.innerOutputConnector.getValue()));
 	}
 
 	toString(gatesToConvertToString = this.gates)
@@ -185,7 +183,6 @@ export default class LogicCircuitGate extends LogicGate
 	 */
 	static gateFromDescription(gateDescription, type, gateDescriptions = {})
 	{
-		// throw new Error("Method not implemented.");
 		if (!gateDescription.io)
 			throw new Error("The io is not defined.");
 		if (!gateDescription.circuit === !gateDescription.function)
